@@ -1,0 +1,160 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id 'com.google.gms.google-services'
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+  //  flutterVersionCode = '10'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0.2'
+}
+
+
+
+android {
+    compileSdkVersion 36
+    namespace "webkul.opencart_flutter.mobikul"
+    ndkVersion = "28.2.13676358"
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+
+        coreLibraryDesugaringEnabled true
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+    dataBinding {
+        enabled = true
+    }
+
+    signingConfigs {
+        ocBuilderConfig {
+            keyAlias 'upload'
+            keyPassword 'DinaUpload@2026'
+            storeFile file('../upload-keystore.jks')
+            storePassword 'DinaUpload@2026'
+        }
+    }
+
+    defaultConfig {
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion 36
+        multiDexEnabled true
+        signingConfig signingConfigs.debug
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+        /*versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName*/
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            debuggable true
+            shrinkResources false
+        }
+
+        release {
+            minifyEnabled false
+            debuggable false
+            shrinkResources false
+            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildFeatures {
+        buildConfig = true
+        resValues = true
+    }
+    flavorDimensions "mobikulOC"
+    productFlavors {
+        ocbuilder {
+            dimension 'mobikulOC'
+            applicationId "com.dinainternational.android"
+            resValue "string", "authority", "com.dinainternational.android"
+            resValue "string", "app_name", "Dina"
+            resValue "string", "google_map_api_key", "AIzaSyC7KJpt2Bii6zG0QXdvG3VuWUCj3t_HjMg"
+            buildConfigField "boolean", "isMobikul", "true"
+            manifestPlaceholders = [
+                    appIcon: "@mipmap/ic_launcher_round",
+                    host:"oc.webkul.in/mobikul/Network/",
+            ]
+            versionCode 13
+            versionName '1.0.5'
+            signingConfig signingConfigs.ocBuilderConfig
+        }
+        }
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+        disable 'InvalidPackage', 'Instantiatable'
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    //implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.2.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.4.10"
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    //    ML KIT
+    api 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.1'
+    api 'com.google.mlkit:image-labeling:17.0.9'
+    // Image labeling custom
+    api 'com.google.mlkit:image-labeling-custom:17.0.3'
+    //---------------------------------------//
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'commons-io:commons-io:2.21.0'
+}
+
+subprojects {
+    project.configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'androidx.core' && details.requested.name == 'core') {
+                details.useVersion '1.17.0'
+            }
+            if (details.requested.group == 'androidx.core' && details.requested.name == 'core-ktx') {
+                details.useVersion '1.17.0'
+            }
+        }
+    }
+}
+
+//apply plugin: 'com.google.ar.sceneform.plugin'
